@@ -2,8 +2,7 @@
 
 Satu fail HTML yang membaca PDF invoice supplier dan menghasilkan senarai **nama supplier, no. invoice, tarikh**, untuk dimuat turun sebagai CSV atau disalin ke Excel.
 
-- `index.html`: versi ringkas (buka terus dalam Chrome/Edge, atau melalui GitHub Pages).
-- `full-app.html`: versi penuh (susun PDF ikut supplier ke folder, eksport format AutoCount dengan kod pemiutang/GL).
+- `index.html`: app ringkas. Buka terus dalam Chrome atau Edge, atau melalui GitHub Pages.
 
 ## Cara guna
 1. Buka `index.html` dalam Chrome atau Edge (perlu internet untuk pembaca PDF, pdf.js dari cdnjs).
