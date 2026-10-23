@@ -1,241 +1,168 @@
 <!doctype html><html lang="ms"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0}</style>
-<title>Senarai Invoice Supplier</title>
+<title>Invoice Supplier</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
-  /* Layout: full-width navy title band, then one centred column: tab, white card with drop zone, table and three buttons. */
+  /* Layout: navy hero band (copy left, live-looking table card right), then a three-step strip, what-it-reads list, privacy note, closing call to action. */
   :root{
-    --bg:#f2f7fa; --card:#ffffff; --ink:#12303f; --muted:#5b7280; --line:#dbe6ec;
-    --navy:#06527f; --on-navy:#ffffff; --sky:#009ad6; --on-sky:#ffffff; --link:#06527f;
-    --tab:#dbe6ec; --dropbg:#f7fcff; --good:#1f7a55; --bad:#c23a3a; --warn:#8a5a00;
-    --sans:system-ui,"Segoe UI",Roboto,Arial,sans-serif;
+    --bg:#f3f7fa; --surface:#ffffff; --ink:#10293a; --muted:#52687a; --line:#d8e3ea;
+    --navy:#06527f; --navy-2:#0a6a9e; --on-navy:#ffffff; --on-navy-muted:#cde4f1;
+    --sky:#009ad6; --on-sky:#ffffff; --link:#06527f; --soft:#e5f2f8;
+    --good:#1b7a4b; --bad:#b3261e;
+    --display:"Schibsted Grotesk",system-ui,"Segoe UI",sans-serif; --sans:"IBM Plex Sans",system-ui,"Segoe UI",sans-serif;
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
-      --bg:#0d1a22; --card:#14232d; --ink:#e4edf2; --muted:#93a6b2; --line:#2a3c47;
-      --navy:#0a4a70; --on-navy:#ffffff; --sky:#2bb3e8; --on-sky:#03202c; --link:#7fc8e8;
-      --tab:#1d303b; --dropbg:#10303d; --good:#6fd3a2; --bad:#ff8f86; --warn:#e8b64d; color-scheme:dark;
+      --bg:#0c1820; --surface:#14232d; --ink:#e6eff4; --muted:#95a9b6; --line:#273944;
+      --navy:#0a4a70; --navy-2:#0d5d8c; --on-navy:#ffffff; --on-navy-muted:#bcd8e8;
+      --sky:#2bb3e8; --on-sky:#03202c; --link:#7fc8e8; --soft:#10303d;
+      --good:#6fd3a2; --bad:#ff8f86; color-scheme:dark;
     }
   }
   :root[data-theme="dark"]{
-    --bg:#0d1a22; --card:#14232d; --ink:#e4edf2; --muted:#93a6b2; --line:#2a3c47;
-    --navy:#0a4a70; --on-navy:#ffffff; --sky:#2bb3e8; --on-sky:#03202c; --link:#7fc8e8;
-    --tab:#1d303b; --dropbg:#10303d; --good:#6fd3a2; --bad:#ff8f86; --warn:#e8b64d; color-scheme:dark;
+    --bg:#0c1820; --surface:#14232d; --ink:#e6eff4; --muted:#95a9b6; --line:#273944;
+    --navy:#0a4a70; --navy-2:#0d5d8c; --on-navy:#ffffff; --on-navy-muted:#bcd8e8;
+    --sky:#2bb3e8; --on-sky:#03202c; --link:#7fc8e8; --soft:#10303d;
+    --good:#6fd3a2; --bad:#ff8f86; color-scheme:dark;
   }
-  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
-  .band{background:var(--navy);color:var(--on-navy);padding-block:18px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-  .band h1{margin:0;font-size:1.35rem;font-weight:700;text-wrap:balance}
-  .band p{margin:4px 0 0;font-size:.9rem;opacity:.9;max-width:80ch}
-  .inner{max-width:1180px;margin:0 auto}
-  .page{padding-block:16px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-  .tabs{display:flex;gap:6px;margin-bottom:12px}
-  .tab{background:var(--card);color:var(--link);font-weight:600;padding:9px 18px;border-radius:8px 8px 0 0}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
-  h2{margin:0 0 10px;font-size:1.05rem}
-  .muted{color:var(--muted);font-size:.85rem;margin:0 0 12px}
-  #drop{display:block;border:2px dashed var(--sky);border-radius:10px;padding:26px 16px;text-align:center;color:var(--muted);cursor:pointer;background:var(--dropbg)}
-  #drop.over{outline:3px solid var(--sky)}
-  #drop:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
-  .status{min-height:1.3em;margin:10px 0;color:var(--muted);font-size:.88rem}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6}
+  .wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  a{color:var(--link)}
+  a:focus-visible,.btn:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
+
+  /* hero */
+  .hero{background:linear-gradient(160deg,var(--navy) 0%,var(--navy-2) 100%);color:var(--on-navy)}
+  .hero .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:40px;align-items:center;padding-block:56px 64px}
+  .eyebrow{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--on-navy-muted);margin:0 0 14px;font-weight:600}
+  h1{font-family:var(--display);font-weight:800;font-size:clamp(2rem,4.6vw,3.3rem);line-height:1.08;margin:0 0 18px;text-wrap:balance;letter-spacing:-.01em}
+  .lede{font-size:1.1rem;color:var(--on-navy-muted);margin:0 0 28px;max-width:46ch}
+  .cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  .btn{display:inline-block;font-family:var(--display);font-weight:700;font-size:1rem;text-decoration:none;padding:13px 24px;border-radius:10px;background:var(--sky);color:var(--on-sky);border:2px solid var(--sky)}
+  .btn.ghost{background:transparent;color:var(--on-navy);border-color:rgba(255,255,255,.55)}
+  .btn:hover{filter:brightness(1.08)}
+  .hint{margin:14px 0 0;font-size:.88rem;color:var(--on-navy-muted)}
+
+  /* table preview */
+  .card{background:var(--surface);color:var(--ink);border-radius:12px;padding:16px;box-shadow:0 18px 40px rgba(2,24,40,.28)}
+  .card .cap{display:flex;justify-content:space-between;gap:10px;font-size:.78rem;color:var(--muted);margin:0 0 10px}
   .scroll{overflow-x:auto}
-  table{width:100%;border-collapse:collapse;font-size:.9rem}
-  th{font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
-  td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
-  td input{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-width:0}
-  td input.name{min-width:260px} td input.inv{min-width:130px} td input.date{min-width:140px} td input.item{min-width:280px} td input.amt{min-width:100px;text-align:right}
-  .file{color:var(--muted);font-size:.82rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .note{font-size:.8rem;min-width:150px} .ok{color:var(--good);font-weight:600} .bad{color:var(--bad)}
-  .empty{color:var(--muted);padding:10px 8px}
-  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
-  button{font:inherit;cursor:pointer;border-radius:8px;padding:9px 16px;border:1px solid var(--link);background:transparent;color:var(--link);font-weight:600}
-  button.primary{background:var(--sky);border-color:var(--sky);color:var(--on-sky)}
-  button:disabled{opacity:.5;cursor:not-allowed}
-  button.x{border:0;padding:4px 8px;color:var(--bad);font-size:1.05rem}
-  .confirm{display:inline-flex;gap:8px;align-items:center}
-  .own{display:flex;flex-direction:column;gap:4px;margin-top:16px;font-size:.8rem;color:var(--muted)}
-  .own input{font:inherit;font-size:.9rem;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:7px 9px;min-width:0}
-  textarea{width:100%;min-height:120px;font-family:ui-monospace,Consolas,monospace;font-size:.82rem;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px}
+  table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:560px}
+  th{font-size:.66rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+  td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .ok{color:var(--good);font-weight:600} .bad{color:var(--bad)}
+  .miss{color:var(--bad);font-style:italic}
+
+  /* sections */
+  section{padding-block:56px 8px}
+  h2{font-family:var(--display);font-size:clamp(1.5rem,3vw,2rem);line-height:1.2;margin:0 0 8px;text-wrap:balance}
+  .sub{color:var(--muted);margin:0 0 28px;max-width:60ch}
+  .steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;counter-reset:s}
+  .steps li{counter-increment:s;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px}
+  .steps li::before{content:counter(s);display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--soft);color:var(--link);font-family:var(--display);font-weight:800;margin-bottom:12px}
+  .steps h3{font-family:var(--display);font-size:1.15rem;margin:0 0 6px}
+  .steps p{margin:0;color:var(--muted);font-size:.95rem}
+  .cols{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:0;padding:0;list-style:none}
+  .cols li{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .cols b{display:block;font-family:var(--display);font-size:.98rem;margin-bottom:4px}
+  .cols span{color:var(--muted);font-size:.86rem;display:block}
+  .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .note{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px}
+  .note h3{font-family:var(--display);margin:0 0 8px;font-size:1.1rem}
+  .note ul{margin:0;padding-left:1.1rem;color:var(--muted);font-size:.95rem}
+  .note li+li{margin-top:6px}
+  .closing{margin-top:56px;background:var(--soft);border-top:1px solid var(--line)}
+  .closing .wrap{display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between;padding-block:36px}
+  .closing h2{margin:0}
+  .closing .btn{background:var(--sky);color:var(--on-sky)}
+  footer{padding-block:20px 28px;color:var(--muted);font-size:.85rem}
+
+  @media (max-width:860px){
+    .hero .wrap{grid-template-columns:minmax(0,1fr);padding-block:40px 44px}
+    .steps,.two{grid-template-columns:minmax(0,1fr)}
+    .cols{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:420px){ .cols{grid-template-columns:minmax(0,1fr)} }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
 
-<header class="band"><div class="inner">
-  <h1>Masuk Invoice ke AutoCount</h1>
-  <p>Seret PDF invoice. App baca nama supplier, no. invoice dan tarikh. Awak semak, kemudian muat turun CSV atau salin ke Excel.</p>
-</div></header>
+<header class="hero">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">Invoice Supplier</p>
+      <h1>Dari PDF invoice ke senarai supplier, tanpa menaip satu per satu.</h1>
+      <p class="lede">Seret PDF invoice ke dalam app. Nama supplier, no. invoice, tarikh, item alat ganti dan amaun dibaca sendiri. Awak semak, kemudian simpan sebagai CSV atau salin ke Excel.</p>
+      <div class="cta">
+        <a class="btn" href="app/" target="_blank" rel="noopener">Buka app</a>
+        <a class="btn ghost" href="https://github.com/batsrfdn-coder/invoice-supplier" target="_blank" rel="noopener">Kod di GitHub</a>
+      </div>
+      <p class="hint">Percuma, tiada akaun. Dibuka dalam Chrome atau Edge.</p>
+    </div>
 
-<main class="page"><div class="inner">
-  <div class="tabs"><span class="tab">Ringkas</span></div>
-  <section class="card">
-    <h2>Senarai ringkas: nama supplier, no. invoice, tarikh</h2>
-    <p class="muted">Seret PDF invoice (boleh banyak). Tiada kod, GL atau folder diperlukan. Betulkan terus dalam jadual jika perlu, kemudian muat turun atau salin ke Excel. PDF dibaca dalam browser awak dan tidak dihantar ke mana-mana.</p>
-    <label id="drop" tabindex="0" for="file">Seret PDF ke sini, atau klik untuk pilih
-      <input id="file" type="file" accept=".pdf,application/pdf" multiple hidden></label>
-    <p id="status" class="status" role="status"></p>
-    <p id="summary" class="muted" style="margin:0 0 8px"></p>
-    <div class="scroll">
-      <table>
-        <thead><tr><th>Nama supplier</th><th>No. invoice</th><th>Tarikh</th><th>Item alat ganti</th><th>Amaun</th><th>Fail</th><th>Nota</th><th><span hidden>Buang</span></th></tr></thead>
-        <tbody id="rows"></tbody>
-      </table>
+    <div class="card" aria-label="Contoh paparan jadual dalam app">
+      <p class="cap"><span>Contoh paparan jadual</span><span>1 baris sempurna, 1 baris perlu disemak</span></p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Nama supplier</th><th>No. invoice</th><th>Tarikh</th><th>Item alat ganti</th><th>Amaun</th><th>Nota</th></tr></thead>
+          <tbody>
+            <tr><td>CONTOH SUPPLIER A SDN BHD</td><td>INV-0001</td><td>20/10/2026</td><td>BRAKE PAD FRONT x2</td><td class="num">80.00</td><td class="ok">OK</td></tr>
+            <tr><td>Contoh Supplier B Enterprise</td><td>B/2210/35</td><td class="miss">kosong</td><td>OIL FILTER x2</td><td class="num">31.00</td><td class="bad">tarikh kosong</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div class="row">
-      <button id="save" class="primary" type="button">Muat turun CSV</button>
-      <button id="copy" type="button">Salin untuk Excel</button>
-      <span id="clearBox"><button id="clear" type="button">Kosongkan</button></span>
-    </div>
-    <div id="fallback" hidden style="margin-top:12px">
-      <p class="muted">Simpan fail tak tersedia di sini. Salin teks ini ke Notepad atau Excel:</p>
-      <textarea id="fallbackText" readonly></textarea>
-    </div>
-    <label class="own" for="own">Nama syarikat saya (penerima bil, tidak dikira supplier). Asingkan dengan koma.
-      <input id="own" type="text" autocomplete="off" placeholder="cth: Syarikat Saya Sdn Bhd"></label>
+  </div>
+</header>
+
+<main>
+  <section class="wrap" aria-labelledby="cara">
+    <h2 id="cara">Tiga langkah</h2>
+    <p class="sub">Urutan yang sama setiap kali, sama ada satu invoice atau seratus.</p>
+    <ol class="steps">
+      <li><h3>Seret PDF</h3><p>Letak banyak invoice sekaligus ke dalam kotak. Invoice yang sama dikesan dan tidak dikira dua kali.</p></li>
+      <li><h3>Semak jadual</h3><p>Baris bertanda merah ada maklumat yang tak dijumpai. Betulkan terus dalam kotak, tiada apa yang diteka.</p></li>
+      <li><h3>Simpan atau salin</h3><p>Muat turun CSV, atau salin dan tampal terus dalam Excel. Disusun ikut nama supplier.</p></li>
+    </ol>
   </section>
-</div></main>
 
-<script>
-const $ = id => document.getElementById(id);
-const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const norm = s => String(s||'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();
-const store = {
-  get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
-  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
-};
-let items = store.get('items', []).filter(r => !r.sample);
-let own = store.get('own', []);   // the user's own company (bill to): never a supplier
-let names = store.get('names', []);                 // supplier names learned from earlier PDFs
-function isOwn(name){ const k = norm(name); return k.length >= 3 && own.some(o => { const n = norm(o); return n.length >= 3 && (k === n || k.includes(n) || n.includes(k)); }); }
-names = names.filter(n => !isOwn(n));
-$('own').value = own.join(', ');
-$('own').addEventListener('change', () => { own = $('own').value.split(',').map(s => s.trim()).filter(Boolean); store.set('own', own); names = names.filter(n => !isOwn(n)); store.set('names', names); $('status').textContent = 'Disimpan. Seret semula PDF yang tersilap nama supplier.'; });
-let uid = Date.now();
-let downloads = null;
-if(window.claude && claude.use){ claude.use('downloads').then(d => { downloads = d; }).catch(() => {}); }
+  <section class="wrap" aria-labelledby="lajur">
+    <h2 id="lajur">Apa yang dibaca daripada setiap invoice</h2>
+    <p class="sub">Lima maklumat yang awak perlukan untuk dimasukkan ke AutoCount.</p>
+    <ul class="cols">
+      <li><b>Nama supplier</b><span>Syarikat di bahagian atas invoice, bukan penerima bil.</span></li>
+      <li><b>No. invoice</b><span>Contoh: INV-0001.</span></li>
+      <li><b>Tarikh</b><span>Format hari/bulan/tahun.</span></li>
+      <li><b>Item alat ganti</b><span>Kod dan nama barang. Beberapa item dipisahkan dengan tanda koma bertitik (;).</span></li>
+      <li><b>Amaun</b><span>Jumlah termasuk cukai yang tercetak pada invoice.</span></li>
+    </ul>
+  </section>
 
-const isoOk = d => /^\d{4}-\d{2}-\d{2}$/.test(d || '');
-const ddmmyyyy = iso => iso.split('-').reverse().join('/');
-function toISO(d, m, y){ y = +y; if(y<100) y += 2000; const dt = new Date(y, m-1, d); return (dt.getFullYear()===y && dt.getMonth()===m-1 && dt.getDate()===+d) ? `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}` : ''; }
+  <section class="wrap" aria-labelledby="tahu">
+    <h2 id="tahu">Sebelum mula</h2>
+    <p class="sub">Dua perkara yang jujur tentang apa yang app ini buat dan tak buat.</p>
+    <div class="two">
+      <div class="note">
+        <h3>Data awak kekal di komputer awak</h3>
+        <ul>
+          <li>PDF dibaca di dalam browser awak dan tidak dihantar ke mana-mana server.</li>
+          <li>Isi "Nama syarikat saya" sekali supaya nama penerima bil tak dikira supplier.</li>
+        </ul>
+      </div>
+      <div class="note">
+        <h3>Had yang perlu diketahui</h3>
+        <ul>
+          <li>Hanya PDF yang ada teks (e-invoice biasa). PDF imbasan atau gambar perlu diisi sendiri.</li>
+          <li>Susunan invoice supplier lain mungkin tak dibaca sepenuhnya. Baris itu ditanda merah untuk disemak.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
 
-/* ---- read a PDF ---- */
-async function pdfText(buf){
-  const doc = await pdfjsLib.getDocument({data: buf}).promise; const out = [];
-  for(let p=1; p<=doc.numPages; p++){
-    const content = (await (await doc.getPage(p)).getTextContent()).items.filter(i => i.str.trim());
-    const lines = {}; content.forEach(i => { const y = Math.round(i.transform[5]/3); (lines[y] = lines[y] || []).push(i); });
-    Object.keys(lines).map(Number).sort((a,b) => b-a).forEach(y => out.push(lines[y].sort((a,b) => a.transform[4]-b.transform[4]).map(i => i.str.trim()).join(' ')));
-  }
-  return out.join('\n');
-}
-function findKnown(text){
-  const T = norm(text); let best = -1, name = '';
-  names.forEach(n => { const k = norm(n); if(k.length < 3) return; const p = T.indexOf(k); if(p >= 0 && (best < 0 || p < best)){ best = p; name = n; } });
-  return name;
-}
-function parseInvoice(text){
-  const res = {invno:'', date:'', name:'', item:'', amount:null};
-  const m = text.match(/(?:invoice[ \t]*(?:no|number|#)|inv\.?[ \t]*no|no\.?[ \t]*invois)\.?[ \t]*[:\-]?[ \t]*([A-Z0-9\-\/]*\d[A-Z0-9\-\/]*)/i);
-  if(m) res.invno = m[1];
-  const dm = text.match(/\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})\b/);   // dd/mm/yyyy
-  if(dm) res.date = toISO(dm[1], dm[2], dm[3]);
-  // Supplier = the first company name from the top of the page that is not the user's own company (the bill-to).
-  const cands = []; text.split('\n').forEach(l => { for(const m of l.matchAll(/(\S.*?\b(?:(?:ENTERPRISE|TRADING)\b(?:\s*(?:SDN\.?\s*BHD\.?|BERHAD))?|SDN\.?\s*BHD\.?|BERHAD))/gi)) cands.push(m[1].trim()); });
-  const pick = cands.find(c => !isOwn(c)) || '';
-  res.name = names.find(n => norm(n) === norm(pick)) || pick || findKnown(text);
-  // Amount = the printed total including tax. Never guessed: stays empty when no total label is found.
-  const lab = re => { const mm = text.match(re); return mm ? parseFloat(mm[1].replace(/,/g,'')) : null; };
-  const num = '(?:[A-Z]{3})?[ \\t]*(\\d[\\d,]*\\.\\d{2}|\\.\\d{2})';
-  res.amount = lab(new RegExp('Total[ \\t]+Including[ \\t]+Tax[ \\t]*:?[ \\t]*' + num, 'i'));
-  if(res.amount === null) res.amount = lab(new RegExp('(?:Grand[ \\t]+Total|Jumlah(?:[ \\t]+Keseluruhan)?|Total[ \\t]+Amount|Amount[ \\t]+Due)[ \\t]*:?[ \\t]*' + num, 'i'));
-  // Spare part items = the item lines under the "Description ... Qty" header, up to the first total line.
-  const L = text.split('\n'), hi = L.findIndex(l => /description|perihal|butiran/i.test(l) && /(qty|kuantiti|quantity)/i.test(l)), its = [];
-  if(hi >= 0) for(let k = hi + 1; k < L.length; k++){
-    if(/total|jumlah/i.test(L[k])) break;
-    const mm = L[k].match(/^\s*\d+\s+(.+?)\s+(\d+(?:\.\d+)?)\s+(?:[A-Z]{3}\s*)?[\d,]*\.\d{2}\s+(?:[A-Z]{3}\s*)?[\d,]*\.\d{2}\s*$/i);
-    if(mm) its.push(mm[1].replace(/\s+/g,' ').trim() + (+mm[2] !== 1 ? ' x' + mm[2] : ''));
-  }
-  res.item = its.join('; ');
-  return res;
-}
-
-/* ---- list ---- */
-const sortItems = () => items.sort((a,b) => (a.name||'~').localeCompare(b.name||'~') || (a.date||'').localeCompare(b.date||'') || a.invno.localeCompare(b.invno));
-function learn(name){ if(name && !isOwn(name) && !names.some(n => norm(n) === norm(name))){ names.push(name); store.set('names', names); } }
-function render(){
-  store.set('items', items.filter(r => !r.sample));
-  const seen = new Set(); let review = 0, dups = 0;
-  $('rows').innerHTML = items.length ? items.map((r,i) => {
-    const notes = [];
-    if(!r.name) notes.push('nama supplier kosong'); if(!r.invno) notes.push('no. invoice kosong'); if(!isoOk(r.date)) notes.push('tarikh kosong'); if(!r.item) notes.push('item kosong'); if(r.amount === '' || r.amount == null) notes.push('amaun kosong');
-    const key = norm(r.name) + '|' + norm(r.invno); r.dup = !r.sample && !!(r.name && r.invno && seen.has(key)); seen.add(key);
-    if(r.dup){ notes.push('duplicate, tak dieksport'); dups++; }
-    if(r.note) notes.push(r.note);
-    if(notes.length && !r.sample) review++;
-    const cls = r.sample ? 'tag' : notes.length ? 'bad' : 'ok';
-    return `<tr><td><input class="name" aria-label="Nama supplier" value="${esc(r.name)}" data-i="${i}" data-k="name"></td>
-      <td><input class="inv" aria-label="No. invoice" value="${esc(r.invno)}" data-i="${i}" data-k="invno"></td>
-      <td><input class="date" type="date" aria-label="Tarikh" value="${esc(r.date)}" data-i="${i}" data-k="date"></td>
-      <td><input class="item" aria-label="Item alat ganti" value="${esc(r.item)}" data-i="${i}" data-k="item"></td>
-      <td><input class="amt" type="number" step="0.01" min="0" aria-label="Amaun" value="${esc(r.amount)}" data-i="${i}" data-k="amount"></td>
-      <td class="file" title="${esc(r.file)}">${esc(r.file)}</td>
-      <td class="note ${cls}">${r.sample ? 'contoh, tak dieksport' : esc(notes.join(', ') || 'OK')}</td>
-      <td><button class="x" type="button" aria-label="Buang baris" data-del="${i}">✕</button></td></tr>`; }).join('')
-    : '<tr><td colspan="8" class="empty">Belum ada invoice.</td></tr>';
-  const real = items.filter(r => !r.sample), sups = new Set(real.map(r => norm(r.name)).filter(Boolean)).size;
-  $('summary').textContent = real.length ? `${real.length} invoice, ${sups} supplier` + (review ? `, ${review} perlu disemak` : '') + (dups ? `, ${dups} duplicate` : '') : (items.length ? 'Contoh sahaja. Kosongkan sebelum guna.' : '');
-  $('save').disabled = $('copy').disabled = !exportRows().length;
-}
-$('rows').addEventListener('change', e => {
-  const t = e.target, i = t.dataset.i; if(i === undefined) return;
-  items[i][t.dataset.k] = t.value.trim(); if(t.dataset.k === 'name') learn(items[i].name); items[i].sample = false; sortItems(); render();
-});
-$('rows').addEventListener('click', e => { const d = e.target.dataset.del; if(d !== undefined){ items.splice(+d, 1); render(); } });
-
-async function addFiles(files){
-  const pdfs = [...files].filter(f => /\.pdf$/i.test(f.name));
-  if(!pdfs.length){ $('status').textContent = 'Hanya fail PDF diterima.'; return; }
-  items = items.filter(r => !r.sample); let n = 0;
-  for(const f of pdfs){
-    $('status').textContent = `Membaca ${++n} / ${pdfs.length}: ${f.name}`;
-    try {
-      const text = await pdfText(await f.arrayBuffer());
-      if(text.replace(/\s/g,'').length < 40){ items.push({id:++uid, name:'', invno:'', date:'', file:f.name, note:'PDF imbasan, isi manual'}); continue; }
-      const p = parseInvoice(text); learn(p.name); items.push({id:++uid, name:p.name, invno:p.invno, date:p.date, item:p.item, amount:p.amount ?? '', file:f.name, note:''});
-    } catch(e){ items.push({id:++uid, name:'', invno:'', date:'', file:f.name, note:'gagal baca PDF'}); }
-  }
-  sortItems(); render(); $('status').textContent = `Siap: ${pdfs.length} PDF dibaca. Semak baris bertanda merah.`;
-}
-const drop = $('drop');
-$('file').addEventListener('change', e => { addFiles(e.target.files); e.target.value = ''; });
-drop.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); $('file').click(); } });
-drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
-drop.addEventListener('dragleave', () => drop.classList.remove('over'));
-drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); addFiles(e.dataTransfer.files); });
-
-/* ---- export ---- */
-function exportRows(){ sortItems(); return items.filter(r => !r.sample && !r.dup && (r.name || r.invno)).map(r => [r.name, r.invno, isoOk(r.date) ? ddmmyyyy(r.date) : '', r.item || '', (r.amount === '' || r.amount == null) ? '' : (+r.amount).toFixed(2)]); }
-const q = v => /[",\n\r]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v;
-function showFallback(text){ $('fallbackText').value = text; $('fallback').hidden = false; $('fallbackText').select(); }
-$('save').addEventListener('click', async () => {
-  const rows = exportRows(); if(!rows.length) return;
-  const csv = '﻿' + [['SupplierName','InvoiceNo','Date','SparepartItem','Amount']].concat(rows).map(r => r.map(q).join(',')).join('\r\n');
-  if(!downloads && !window.claude){ const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'})); a.download = `Invoice_Supplier_${new Date().toISOString().slice(0,10)}.csv`; a.click(); $('status').textContent = `${rows.length} baris dimuat turun.`; return; }
-  if(!downloads){ showFallback(csv.slice(1)); $('status').textContent = 'Simpan terus tak tersedia di sini. Teks CSV ada di bawah.'; return; }
-  try { await downloads.save({filename:`Invoice_Supplier_${new Date().toISOString().slice(0,10)}.csv`, data:csv}); $('status').textContent = `${rows.length} baris disimpan.`; }
-  catch(e){ $('status').textContent = e && e.code === 'declined' ? 'Simpan dibatalkan.' : 'Simpan tak berjaya. Guna "Salin untuk Excel".'; }
-});
-$('copy').addEventListener('click', async () => {
-  const rows = exportRows(); if(!rows.length) return; const tsv = rows.map(r => r.join('\t')).join('\n');
-  try { await navigator.clipboard.writeText(tsv); $('status').textContent = `${rows.length} baris disalin. Tampal terus dalam Excel.`; }
-  catch(e){ showFallback(tsv); $('status').textContent = 'Salin automatik tak dibenarkan. Pilih teks di bawah dan salin sendiri.'; }
-});
-function clearIdle(){ $('clearBox').innerHTML = '<button id="clear" type="button">Kosongkan</button>'; $('clear').addEventListener('click', clearAsk); }
-function clearAsk(){
-  if(!items.length) return;
-  $('clearBox').innerHTML = '<span class="confirm">Kosongkan semua? <button id="yes" type="button" class="primary">Ya</button> <button id="no" type="button">Batal</button></span>';
-  $('yes').addEventListener('click', () => { items = []; $('fallback').hidden = true; clearIdle(); render(); $('status').textContent = ''; });
-  $('no').addEventListener('click', clearIdle);
-}
-$('clear').addEventListener('click', clearAsk);
-render();
-</script>
-
+<div class="closing">
+  <div class="wrap">
+    <h2>Cuba dengan satu invoice sekarang.</h2>
+    <a class="btn" href="app/" target="_blank" rel="noopener">Buka app</a>
+  </div>
+</div>
+<footer class="wrap">Invoice Supplier. Kod sumber di <a href="https://github.com/batsrfdn-coder/invoice-supplier" target="_blank" rel="noopener">github.com/batsrfdn-coder/invoice-supplier</a>.</footer>
 </html>
