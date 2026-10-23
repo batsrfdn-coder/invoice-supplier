@@ -41,7 +41,7 @@
   th{font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
   td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
   td input{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-width:0}
-  td input.name{min-width:260px} td input.inv{min-width:130px} td input.date{min-width:140px}
+  td input.name{min-width:260px} td input.inv{min-width:130px} td input.date{min-width:140px} td input.item{min-width:280px} td input.amt{min-width:100px;text-align:right}
   .file{color:var(--muted);font-size:.82rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .note{font-size:.8rem;min-width:150px} .ok{color:var(--good);font-weight:600} .bad{color:var(--bad)}
   .empty{color:var(--muted);padding:10px 8px}
@@ -74,7 +74,7 @@
     <p id="summary" class="muted" style="margin:0 0 8px"></p>
     <div class="scroll">
       <table>
-        <thead><tr><th>Nama supplier</th><th>No. invoice</th><th>Tarikh</th><th>Fail</th><th>Nota</th><th><span hidden>Buang</span></th></tr></thead>
+        <thead><tr><th>Nama supplier</th><th>No. invoice</th><th>Tarikh</th><th>Item alat ganti</th><th>Amaun</th><th>Fail</th><th>Nota</th><th><span hidden>Buang</span></th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
     </div>
@@ -131,7 +131,7 @@ function findKnown(text){
   return name;
 }
 function parseInvoice(text){
-  const res = {invno:'', date:'', name:''};
+  const res = {invno:'', date:'', name:'', item:'', amount:null};
   const m = text.match(/(?:invoice[ \t]*(?:no|number|#)|inv\.?[ \t]*no|no\.?[ \t]*invois)\.?[ \t]*[:\-]?[ \t]*([A-Z0-9\-\/]*\d[A-Z0-9\-\/]*)/i);
   if(m) res.invno = m[1];
   const dm = text.match(/\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})\b/);   // dd/mm/yyyy
@@ -140,6 +140,19 @@ function parseInvoice(text){
   const cands = []; text.split('\n').forEach(l => { for(const m of l.matchAll(/(\S.*?\b(?:(?:ENTERPRISE|TRADING)\b(?:\s*(?:SDN\.?\s*BHD\.?|BERHAD))?|SDN\.?\s*BHD\.?|BERHAD))/gi)) cands.push(m[1].trim()); });
   const pick = cands.find(c => !isOwn(c)) || '';
   res.name = names.find(n => norm(n) === norm(pick)) || pick || findKnown(text);
+  // Amount = the printed total including tax. Never guessed: stays empty when no total label is found.
+  const lab = re => { const mm = text.match(re); return mm ? parseFloat(mm[1].replace(/,/g,'')) : null; };
+  const num = '(?:[A-Z]{3})?[ \\t]*(\\d[\\d,]*\\.\\d{2}|\\.\\d{2})';
+  res.amount = lab(new RegExp('Total[ \\t]+Including[ \\t]+Tax[ \\t]*:?[ \\t]*' + num, 'i'));
+  if(res.amount === null) res.amount = lab(new RegExp('(?:Grand[ \\t]+Total|Jumlah(?:[ \\t]+Keseluruhan)?|Total[ \\t]+Amount|Amount[ \\t]+Due)[ \\t]*:?[ \\t]*' + num, 'i'));
+  // Spare part items = the item lines under the "Description ... Qty" header, up to the first total line.
+  const L = text.split('\n'), hi = L.findIndex(l => /description|perihal|butiran/i.test(l) && /(qty|kuantiti|quantity)/i.test(l)), its = [];
+  if(hi >= 0) for(let k = hi + 1; k < L.length; k++){
+    if(/total|jumlah/i.test(L[k])) break;
+    const mm = L[k].match(/^\s*\d+\s+(.+?)\s+(\d+(?:\.\d+)?)\s+(?:[A-Z]{3}\s*)?[\d,]*\.\d{2}\s+(?:[A-Z]{3}\s*)?[\d,]*\.\d{2}\s*$/i);
+    if(mm) its.push(mm[1].replace(/\s+/g,' ').trim() + (+mm[2] !== 1 ? ' x' + mm[2] : ''));
+  }
+  res.item = its.join('; ');
   return res;
 }
 
@@ -151,7 +164,7 @@ function render(){
   const seen = new Set(); let review = 0, dups = 0;
   $('rows').innerHTML = items.length ? items.map((r,i) => {
     const notes = [];
-    if(!r.name) notes.push('nama supplier kosong'); if(!r.invno) notes.push('no. invoice kosong'); if(!isoOk(r.date)) notes.push('tarikh kosong');
+    if(!r.name) notes.push('nama supplier kosong'); if(!r.invno) notes.push('no. invoice kosong'); if(!isoOk(r.date)) notes.push('tarikh kosong'); if(!r.item) notes.push('item kosong'); if(r.amount === '' || r.amount == null) notes.push('amaun kosong');
     const key = norm(r.name) + '|' + norm(r.invno); r.dup = !r.sample && !!(r.name && r.invno && seen.has(key)); seen.add(key);
     if(r.dup){ notes.push('duplicate, tak dieksport'); dups++; }
     if(r.note) notes.push(r.note);
@@ -160,10 +173,12 @@ function render(){
     return `<tr><td><input class="name" aria-label="Nama supplier" value="${esc(r.name)}" data-i="${i}" data-k="name"></td>
       <td><input class="inv" aria-label="No. invoice" value="${esc(r.invno)}" data-i="${i}" data-k="invno"></td>
       <td><input class="date" type="date" aria-label="Tarikh" value="${esc(r.date)}" data-i="${i}" data-k="date"></td>
+      <td><input class="item" aria-label="Item alat ganti" value="${esc(r.item)}" data-i="${i}" data-k="item"></td>
+      <td><input class="amt" type="number" step="0.01" min="0" aria-label="Amaun" value="${esc(r.amount)}" data-i="${i}" data-k="amount"></td>
       <td class="file" title="${esc(r.file)}">${esc(r.file)}</td>
       <td class="note ${cls}">${r.sample ? 'contoh, tak dieksport' : esc(notes.join(', ') || 'OK')}</td>
       <td><button class="x" type="button" aria-label="Buang baris" data-del="${i}">✕</button></td></tr>`; }).join('')
-    : '<tr><td colspan="6" class="empty">Belum ada invoice.</td></tr>';
+    : '<tr><td colspan="8" class="empty">Belum ada invoice.</td></tr>';
   const real = items.filter(r => !r.sample), sups = new Set(real.map(r => norm(r.name)).filter(Boolean)).size;
   $('summary').textContent = real.length ? `${real.length} invoice, ${sups} supplier` + (review ? `, ${review} perlu disemak` : '') + (dups ? `, ${dups} duplicate` : '') : (items.length ? 'Contoh sahaja. Kosongkan sebelum guna.' : '');
   $('save').disabled = $('copy').disabled = !exportRows().length;
@@ -183,7 +198,7 @@ async function addFiles(files){
     try {
       const text = await pdfText(await f.arrayBuffer());
       if(text.replace(/\s/g,'').length < 40){ items.push({id:++uid, name:'', invno:'', date:'', file:f.name, note:'PDF imbasan, isi manual'}); continue; }
-      const p = parseInvoice(text); learn(p.name); items.push({id:++uid, name:p.name, invno:p.invno, date:p.date, file:f.name, note:''});
+      const p = parseInvoice(text); learn(p.name); items.push({id:++uid, name:p.name, invno:p.invno, date:p.date, item:p.item, amount:p.amount ?? '', file:f.name, note:''});
     } catch(e){ items.push({id:++uid, name:'', invno:'', date:'', file:f.name, note:'gagal baca PDF'}); }
   }
   sortItems(); render(); $('status').textContent = `Siap: ${pdfs.length} PDF dibaca. Semak baris bertanda merah.`;
@@ -196,12 +211,12 @@ drop.addEventListener('dragleave', () => drop.classList.remove('over'));
 drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); addFiles(e.dataTransfer.files); });
 
 /* ---- export ---- */
-function exportRows(){ sortItems(); return items.filter(r => !r.sample && !r.dup && (r.name || r.invno)).map(r => [r.name, r.invno, isoOk(r.date) ? ddmmyyyy(r.date) : '']); }
+function exportRows(){ sortItems(); return items.filter(r => !r.sample && !r.dup && (r.name || r.invno)).map(r => [r.name, r.invno, isoOk(r.date) ? ddmmyyyy(r.date) : '', r.item || '', (r.amount === '' || r.amount == null) ? '' : (+r.amount).toFixed(2)]); }
 const q = v => /[",\n\r]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v;
 function showFallback(text){ $('fallbackText').value = text; $('fallback').hidden = false; $('fallbackText').select(); }
 $('save').addEventListener('click', async () => {
   const rows = exportRows(); if(!rows.length) return;
-  const csv = '﻿' + [['SupplierName','InvoiceNo','Date']].concat(rows).map(r => r.map(q).join(',')).join('\r\n');
+  const csv = '﻿' + [['SupplierName','InvoiceNo','Date','SparepartItem','Amount']].concat(rows).map(r => r.map(q).join(',')).join('\r\n');
   if(!downloads && !window.claude){ const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'})); a.download = `Invoice_Supplier_${new Date().toISOString().slice(0,10)}.csv`; a.click(); $('status').textContent = `${rows.length} baris dimuat turun.`; return; }
   if(!downloads){ showFallback(csv.slice(1)); $('status').textContent = 'Simpan terus tak tersedia di sini. Teks CSV ada di bawah.'; return; }
   try { await downloads.save({filename:`Invoice_Supplier_${new Date().toISOString().slice(0,10)}.csv`, data:csv}); $('status').textContent = `${rows.length} baris disimpan.`; }
