@@ -88,7 +88,7 @@
       <textarea id="fallbackText" readonly></textarea>
     </div>
     <label class="own" for="own">Nama syarikat saya (penerima bil, tidak dikira supplier). Asingkan dengan koma.
-      <input id="own" type="text" autocomplete="off"></label>
+      <input id="own" type="text" autocomplete="off" placeholder="cth: Syarikat Saya Sdn Bhd"></label>
   </section>
 </div></main>
 
@@ -101,7 +101,7 @@ const store = {
   set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
 };
 let items = store.get('items', []).filter(r => !r.sample);
-let own = store.get('own', ['Siong Fatt Group Sdn Bhd']);   // the user's own company (bill to): never a supplier
+let own = store.get('own', []);   // the user's own company (bill to): never a supplier
 let names = store.get('names', []);                 // supplier names learned from earlier PDFs
 function isOwn(name){ const k = norm(name); return k.length >= 3 && own.some(o => { const n = norm(o); return n.length >= 3 && (k === n || k.includes(n) || n.includes(k)); }); }
 names = names.filter(n => !isOwn(n));
